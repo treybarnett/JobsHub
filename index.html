@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Qwick · Jobs · Internal Launch Hub</title>
+<style>
+  :root {
+    --lettuce: #209F5B;
+    --creme: #FFF9F3;
+    --charcoal: #101117;
+    --white: #FFFFFF;
+    --lime: #67FF64;
+    --tomato: #FB4F2F;
+    --aqua: #5295FF;
+    --gray: #737373;
+    --med-gray: #9D9D9D;
+    --light-gray: #E5E5E5;
+    --pale-gray: #F2F2F2;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--creme); color: var(--charcoal); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
+  a { color: inherit; text-decoration: none; }
+  button { font-family: inherit; cursor: pointer; }
+
+  .app { display: flex; min-height: 100vh; }
+
+  /* Sidebar */
+  .sidebar { width: 256px; flex-shrink: 0; background: var(--charcoal); color: var(--creme); display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; }
+  .sidebar-head { padding: 24px; display: flex; align-items: center; gap: 8px; }
+  .logo-mark { width: 36px; height: 36px; background: var(--lettuce); color: var(--white); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 18px; }
+  .logo-title { font-weight: 900; font-size: 18px; line-height: 1.1; }
+  .logo-sub { font-size: 11px; color: var(--med-gray); }
+  .nav { flex: 1; padding: 0 12px; }
+  .nav button { width: 100%; display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 8px; background: transparent; border: 0; color: var(--creme); font-weight: 700; font-size: 14px; text-align: left; margin-bottom: 4px; }
+  .nav button.active { background: var(--lettuce); color: var(--white); }
+  .nav button:hover:not(.active) { background: rgba(255,255,255,0.05); }
+  .sidebar-foot { padding: 16px; border-top: 1px solid #2a2b32; font-size: 11px; }
+  .sidebar-foot .meta { color: var(--med-gray); margin-bottom: 4px; }
+
+  /* Main */
+  .main { flex: 1; display: flex; flex-direction: column; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; padding: 16px 32px; border-bottom: 1px solid var(--light-gray); background: var(--creme); position: sticky; top: 0; z-index: 10; }
+  .search { display: flex; align-items: center; gap: 8px; background: var(--white); border: 1px solid var(--light-gray); border-radius: 8px; padding: 8px 12px; flex: 1; max-width: 440px; }
+  .search input { border: 0; outline: 0; background: transparent; flex: 1; font-size: 14px; }
+  .badge { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: var(--lettuce); color: var(--white); }
+
+  .content { padding: 40px 32px; flex: 1; }
+  .view { display: none; }
+  .view.active { display: block; }
+
+  /* Hero */
+  .hero { background: var(--lettuce); color: var(--white); border-radius: 16px; padding: 40px; margin-bottom: 48px; }
+  .hero .eyebrow { color: var(--lime); font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; }
+  .hero h1 { margin: 0 0 16px 0; font-size: 48px; font-weight: 900; line-height: 1.1; max-width: 720px; }
+  .hero p { margin: 0 0 24px 0; font-size: 17px; opacity: 0.9; max-width: 640px; }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; }
+  .chip { font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 999px; background: var(--charcoal); color: var(--white); }
+  .chip.lime { background: var(--lime); color: var(--charcoal); }
+  .chip.aqua { background: var(--aqua); color: var(--white); }
+  .chip.tomato { background: var(--tomato); color: var(--white); }
+
+  /* Section header */
+  .section-head { margin-bottom: 24px; }
+  .section-eyebrow { color: var(--lettuce); font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 8px; }
+  .section-title { font-size: 28px; font-weight: 900; margin: 0; }
+  .section-desc { color: var(--gray); margin-top: 8px; max-width: 640px; }
+
+  /* Cards */
+  .card { background: var(--white); border: 1px solid var(--light-gray); border-radius: 12px; padding: 24px; }
+  .card-dark { background: var(--charcoal); color: var(--creme); border: 0; border-radius: 12px; padding: 24px; }
+  .card h3 { margin: 0 0 8px 0; font-size: 16px; font-weight: 900; }
+  .card p { margin: 0; font-size: 14px; color: var(--gray); }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+  .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  @media (max-width: 900px) {
+    .grid-3, .grid-2 { grid-template-columns: 1fr; }
+    .sidebar { display: none; }
+  }
+
+  .nav-card { text-align: left; background: var(--white); border: 1px solid var(--light-gray); border-radius: 12px; padding: 24px; display: block; transition: transform 0.15s ease, box-shadow 0.15s ease; }
+  .nav-card:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+  .nav-card .ico { width: 40px; height: 40px; background: var(--creme); border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; color: var(--lettuce); font-size: 20px; font-weight: 900; }
+  .nav-card .cta { color: var(--lettuce); font-weight: 700; font-size: 14px; margin-top: 12px; display: inline-block; }
+
+  .feature-card { text-align: left; background: var(--white); border: 1px solid var(--light-gray); border-radius: 16px; padding: 32px; display: block; transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease; }
+  .feature-card:hover { transform: translateY(-3px); box-shadow: 0 12px 32px rgba(0,0,0,0.1); border-color: var(--lettuce); }
+  .feature-card .feature-ico { width: 56px; height: 56px; border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-bottom: 20px; font-size: 26px; }
+  .feature-card .feature-tag { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--gray); margin-bottom: 8px; }
+  .feature-card h3 { margin: 0 0 12px 0; font-size: 24px; font-weight: 900; color: var(--charcoal); }
+  .feature-card p { margin: 0 0 20px 0; font-size: 15px; color: var(--gray); line-height: 1.55; }
+  .feature-card .feature-cta { display: inline-flex; align-items: center; gap: 6px; color: var(--lettuce); font-weight: 700; font-size: 14px; }
+
+  /* Loom */
+  .loom-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: 24px; }
+  .loom-card { border-radius: 12px; overflow: hidden; background: var(--white); border: 1px solid var(--light-gray); }
+  .loom-frame { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; background: var(--charcoal); }
+  .loom-frame iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; }
+  .loom-tag { position: absolute; top: 12px; left: 12px; background: var(--lime); color: var(--charcoal); font-size: 11px; font-weight: 700; padding: 4px 10px; border-radius: 6px; z-index: 2; pointer-events: none; }
+  .loom-body { padding: 24px; }
+  .loom-body h3 { margin: 0 0 8px 0; font-size: 20px; font-weight: 900; }
+  .loom-body .desc { color: var(--gray); font-size: 14px; margin-bottom: 16px; }
+  .loom-foot { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+  .loom-foot .meta { color: var(--med-gray); font-size: 12px; }
+  .btn-primary { display: inline-flex; align-items: center; gap: 8px; background: var(--lettuce); color: var(--white); padding: 8px 14px; border-radius: 8px; font-weight: 700; font-size: 13px; border: 0; }
+
+  /* Docs */
+  .doc-section { margin-bottom: 40px; }
+  .doc-section h3 { display: flex; align-items: center; gap: 8px; font-size: 18px; font-weight: 900; margin: 0 0 16px 0; }
+  .doc-section h3 .count { font-size: 11px; background: var(--pale-gray); color: var(--gray); padding: 2px 8px; border-radius: 999px; font-weight: 700; }
+  .doc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  @media (max-width: 1100px) { .doc-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 600px) { .doc-grid { grid-template-columns: 1fr; } }
+  .doc { background: var(--white); border: 1px solid var(--light-gray); border-radius: 12px; padding: 16px; display: block; }
+  .doc:hover { border-color: var(--lettuce); }
+  .doc .title { font-weight: 700; font-size: 14px; margin: 12px 0 4px 0; }
+  .doc .meta { font-size: 11px; color: var(--med-gray); }
+  .doc.empty { border-style: dashed; background: var(--pale-gray); color: var(--gray); }
+
+  /* Playbook steps */
+  .step { background: var(--white); border: 1px solid var(--light-gray); border-radius: 12px; padding: 20px; }
+  .step .h { color: var(--lettuce); font-weight: 900; font-size: 13px; margin-bottom: 8px; }
+  .step .b { font-size: 14px; }
+
+  /* FAQ */
+  details.faq { background: var(--white); border: 1px solid var(--light-gray); border-radius: 12px; padding: 20px; margin-bottom: 12px; }
+  details.faq summary { font-weight: 700; cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  details.faq summary::-webkit-details-marker { display: none; }
+  details.faq summary::after { content: "→"; color: var(--lettuce); font-weight: 900; transition: transform 0.15s ease; }
+  details.faq[open] summary::after { transform: rotate(90deg); }
+  details.faq p { margin: 12px 0 0 0; color: var(--gray); font-size: 14px; line-height: 1.6; }
+
+  /* Owner table */
+  .owners { background: var(--white); border: 1px solid var(--light-gray); border-radius: 12px; overflow: hidden; }
+  .owner-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 14px 20px; border-bottom: 1px solid var(--light-gray); align-items: center; }
+  .owner-row:last-child { border-bottom: 0; }
+  .owner-row .area { color: var(--gray); font-size: 14px; }
+  .owner-row .owner { font-weight: 700; font-size: 14px; }
+
+  /* Battle */
+  .scen-tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--light-gray); margin-bottom: 24px; flex-wrap: wrap; }
+  .scen-tab { padding: 10px 16px; font-size: 13px; font-weight: 700; background: transparent; border: 0; border-bottom: 3px solid transparent; color: var(--charcoal); margin-bottom: -1px; }
+  .scen-tab.active { color: var(--lettuce); border-bottom-color: var(--lettuce); }
+  .scen-head { background: var(--charcoal); color: var(--creme); padding: 24px; border-radius: 12px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; margin-bottom: 24px; }
+  .scen-head .e { color: var(--lime); font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 4px; }
+  .scen-head h2 { font-size: 24px; font-weight: 900; margin: 0; }
+  .block { background: var(--white); border: 1px solid var(--light-gray); border-left-width: 5px; border-radius: 12px; padding: 20px; }
+  .block.green { border-left-color: var(--lettuce); }
+  .block.red { border-left-color: var(--tomato); }
+  .block.blue { border-left-color: var(--aqua); }
+  .block.neutral { border-left-color: var(--charcoal); }
+  .block h4 { margin: 0 0 12px 0; font-size: 15px; font-weight: 900; }
+  .block ul { margin: 0; padding: 0; list-style: none; }
+  .block li { background: var(--pale-gray); border-radius: 6px; padding: 8px 10px; margin-bottom: 8px; font-size: 13px; line-height: 1.5; }
+
+  /* Footer */
+  .footer { border-top: 1px solid var(--light-gray); padding: 24px 32px; display: flex; justify-content: space-between; font-size: 11px; color: var(--gray); }
+
+  .view > * + * { margin-top: 32px; }
+  .grid-3.gap, .grid-2.gap { gap: 16px; }
+
+  /* Gate overlay */
+  .gate { position: fixed; inset: 0; background: var(--charcoal); z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 24px; }
+  .gate-card { background: var(--white); border-radius: 16px; padding: 48px 40px; max-width: 440px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,0.3); }
+  .gate-logo { display: flex; align-items: center; gap: 10px; margin-bottom: 24px; }
+  .gate-logo .mark { width: 44px; height: 44px; background: var(--lettuce); color: var(--white); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-weight: 900; font-size: 22px; }
+  .gate-logo .text { font-weight: 900; font-size: 20px; }
+  .gate h1 { font-size: 26px; font-weight: 900; margin: 0 0 8px 0; }
+  .gate p { color: var(--gray); margin: 0 0 28px 0; font-size: 14px; line-height: 1.5; }
+  .gate label { display: block; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--gray); margin-bottom: 8px; }
+  .gate input { width: 100%; padding: 14px 16px; font-size: 16px; border: 2px solid var(--light-gray); border-radius: 10px; outline: 0; font-family: inherit; transition: border-color 0.15s ease; }
+  .gate input:focus { border-color: var(--lettuce); }
+  .gate input.error { border-color: var(--tomato); }
+  .gate-error { color: var(--tomato); font-size: 13px; font-weight: 700; margin-top: 8px; min-height: 18px; }
+  .gate-submit { width: 100%; margin-top: 16px; background: var(--lettuce); color: var(--white); border: 0; padding: 14px; border-radius: 10px; font-weight: 900; font-size: 15px; cursor: pointer; transition: background 0.15s ease; }
+  .gate-submit:hover { background: #1A8A4F; }
+  .gate-foot { margin-top: 20px; text-align: center; font-size: 11px; color: var(--med-gray); }
+  body.locked { overflow: hidden; }
+  .app.hidden { display: none; }
+</style>
+</head>
+<body class="locked">
+
+<div class="gate" id="gate">
+  <div class="gate-card">
+    <div class="gate-logo">
+      <div class="mark">Q</div>
+      <div class="text">Qwick · Jobs</div>
+    </div>
+    <h1>Internal Launch Hub</h1>
+    <p>This site contains confidential GTM materials for Qwick employees. Enter the access phrase to continue.</p>
+    <form id="gate-form" autocomplete="off">
+      <label for="gate-input">Access phrase</label>
+      <input id="gate-input" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Type the phrase…" />
+      <div class="gate-error" id="gate-error"></div>
+      <button type="submit" class="gate-submit">Unlock</button>
+    </form>
+    <div class="gate-foot">Internal Use Only · Qwick</div>
+  </div>
+</div>
+
+<div class="app hidden" id="app">
+  <aside class="sidebar">
+    <div class="sidebar-head">
+      <div class="logo-mark">Q</div>
+      <div>
+        <div class="logo-title">Qwick · Jobs</div>
+        <div class="logo-sub">Internal Launch Hub</div>
+      </div>
+    </div>
+    <nav class="nav" id="nav">
+      <button data-view="overview" class="active">🏠 Overview</button>
+      <button data-view="looms">🎬 Loom Videos</button>
+      <button data-view="playbooks">📄 Docs &amp; Playbooks</button>
+      <button data-view="battlecards">📣 Marketing</button>
+    </nav>
+    <div class="sidebar-foot">
+      <div class="meta">Sales · CX · Ops · AM</div>
+      <div>Updated May 14, 2026</div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="search">
+        <span>🔍</span>
+        <input placeholder="Search Jobs launch materials…" />
+      </div>
+      <div></div>
+    </div>
+
+    <div class="content">
+      <!-- OVERVIEW -->
+      <section class="view active" id="view-overview">
+        <div class="hero">
+          <div class="eyebrow">Qwick Jobs · Internal Launch Hub</div>
+          <h1>Hire smarter, not harder.</h1>
+          <p>Qwick Jobs extends our pre-vetted Pro network into permanent (FTE &amp; PTE) hospitality hiring. Post-for-free, pay-on-success: $1,500 promotional fee per hire (vs. $2,500 TOS baseline), backed by a 30-day guarantee. The pitch is simple — replace stacks of self-reported resumes with objective shift history, an AI Match score, and a paid working interview.</p>
+          <div class="chips">
+            <span class="chip">$1,500 promo per hire</span>
+            <span class="chip">$2,500 TOS baseline</span>
+            <span class="chip">30-day guarantee</span>
+            <span class="chip">Free to post · pay on success</span>
+          </div>
+        </div>
+
+        <div class="section-head">
+          <div class="section-eyebrow">What's inside</div>
+          <h2 class="section-title">Content overview</h2>
+          <p class="section-desc">Three sections to get you ready for any Jobs conversation. Click into whichever you need.</p>
+        </div>
+
+        <div class="grid-3">
+          <a class="nav-card" href="#" data-go="looms">
+            <div class="ico">🎬</div>
+            <h3>Loom Videos</h3>
+            <p>Trey's product walkthrough and the gold-standard customer demo. Start here before your first Jobs conversation.</p>
+            <span class="cta">Watch the videos →</span>
+          </a>
+          <a class="nav-card" href="#" data-go="playbooks">
+            <div class="ico">📄</div>
+            <h3>Docs &amp; Playbooks</h3>
+            <p>Foundational reading, the 7-step demo playbook, a full FAQ from the v3 docs, and a who-owns-what directory.</p>
+            <span class="cta">Open the docs →</span>
+          </a>
+          <a class="nav-card" href="#" data-go="battlecards">
+            <div class="ico">📣</div>
+            <h3>Marketing Content</h3>
+            <p>Campaign briefs, customer-facing collateral, email templates, and social assets for the Jobs launch.</p>
+            <span class="cta">Browse content →</span>
+          </a>
+        </div>
+      </section>
+
+      <!-- LOOMS -->
+      <section class="view" id="view-looms">
+        <div class="section-head">
+          <div class="section-eyebrow">Watch &amp; Learn</div>
+          <h2 class="section-title">Loom Videos</h2>
+          <p class="section-desc">Source-of-truth walkthroughs for Sales, CX, Ops, and AM. Watch both before your first Jobs conversation.</p>
+        </div>
+        <div class="loom-grid">
+          <div class="loom-card">
+            <div class="loom-frame">
+              <span class="loom-tag">Required Viewing</span>
+              <iframe src="https://www.loom.com/embed/1625ff7f1e8b42cd8dcd7ec6d067ed0d" allow="autoplay; fullscreen; encrypted-media; picture-in-picture; clipboard-write" allowfullscreen></iframe>
+            </div>
+            <div class="loom-body">
+              <h3>Sales Product Overview</h3>
+              <p class="desc">Trey walks through Jobs end-to-end: positioning, the business workflow, working interviews, the credit lifecycle, and how Jobs sits inside the existing Qwick experience.</p>
+              <div class="loom-foot">
+                <span class="meta">Sales Product Overview</span>
+                <a class="btn-primary" href="https://www.loom.com/share/1625ff7f1e8b42cd8dcd7ec6d067ed0d" target="_blank" rel="noreferrer">▶ Watch on Loom</a>
+              </div>
+            </div>
+          </div>
+          <div class="loom-card">
+            <div class="loom-frame">
+              <span class="loom-tag">Pitch Reference</span>
+              <iframe src="https://www.loom.com/embed/6457eed134ba44a49d93b3468984b669" allow="autoplay; fullscreen; encrypted-media; picture-in-picture; clipboard-write" allowfullscreen></iframe>
+            </div>
+            <div class="loom-body">
+              <h3>CX Walk through</h3>
+              <p class="desc">The reference customer demo. Use this as the model for how to pitch Jobs in a live conversation — leading with free, framing the Indeed problem, and closing on a single hire.</p>
+              <div class="loom-foot">
+                <span class="meta">CX Walk through</span>
+                <a class="btn-primary" href="https://www.loom.com/share/6457eed134ba44a49d93b3468984b669" target="_blank" rel="noreferrer">▶ Watch on Loom</a>
+              </div>
+            </div>
+          </div>
+          <div class="loom-card">
+            <div class="loom-frame">
+              <span class="loom-tag">Internal</span>
+              <iframe src="https://www.loom.com/embed/f89624b075a14bb1b6df9dc6b0ddcb67" allow="autoplay; fullscreen; encrypted-media; picture-in-picture; clipboard-write" allowfullscreen></iframe>
+            </div>
+            <div class="loom-body">
+              <h3>Internal Product Walkthrough</h3>
+              <p class="desc">Internal-only walkthrough of the Jobs product — deeper look at the workflow, edge cases, and behind-the-scenes context for the team.</p>
+              <div class="loom-foot">
+                <span class="meta">Internal Product Walkthrough</span>
+                <a class="btn-primary" href="https://www.loom.com/share/f89624b075a14bb1b6df9dc6b0ddcb67" target="_blank" rel="noreferrer">▶ Watch on Loom</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PLAYBOOKS -->
+      <section class="view" id="view-playbooks">
+        <div class="section-head">
+          <div class="section-eyebrow">Reference</div>
+          <h2 class="section-title">Docs &amp; Playbooks</h2>
+          <p class="section-desc">Single source of truth for the Jobs launch. Pulls directly from the Walkthrough and FAQ v3.</p>
+        </div>
+
+        <div class="doc-section">
+          <h3>📖 Foundational Reading <span class="count">3</span></h3>
+          <div class="doc-grid">
+            <a class="doc" href="https://docs.google.com/document/d/1Dx57AY_mcCEx9zEQgUekSIAFL6NfUfU5aHR5WOSzSDE/edit" target="_blank">📄<div class="title">Net New — Qwick Jobs Sales Enablement Briefing</div><div class="meta">Updated · May 2026 · Primary reference</div></a>
+            <a class="doc" href="https://docs.google.com/document/d/1Ng4RWGNLNVmfGAHB2m99A1sNBPGpjldZfPmFkqFVFiQ/edit" target="_blank">📄<div class="title">Qwick Jobs — Product Walkthrough (v3)</div><div class="meta">Updated · May 14, 2026</div></a>
+            <a class="doc" href="https://docs.google.com/document/d/1WXaFFB5CbB90xI87WaVA-BIGohzJVxmSopLhtQK2gYk/edit" target="_blank">📄<div class="title">Qwick Jobs — Internal FAQ (v3)</div><div class="meta">Updated · May 14, 2026</div></a>
+          </div>
+        </div>
+
+        <div class="doc-section">
+          <h3>👥 Demo &amp; Pitch <span class="count">1</span></h3>
+          <div class="doc-grid">
+            <a class="doc" href="https://docs.google.com/document/d/1I4nNPlOrPngNyJdvg7tCdOuvTM23s479_Wbtoxz9WWw/edit" target="_blank">📄<div class="title">Qwick Jobs Battlecard (May 2026)</div><div class="meta">Updated · May 2026 · Sales tool</div></a>
+          </div>
+        </div>
+
+        <div class="section-head" style="margin-top: 48px;">
+          <div class="section-eyebrow">Demo Playbook</div>
+          <h2 class="section-title">7 steps for a Jobs conversation</h2>
+          <p class="section-desc">Pull this up before any Sales or AM call. Adapted from the Walkthrough v3.</p>
+        </div>
+        <div class="grid-2">
+          <div class="step"><div class="h">1. Lead with free, not with $1,500.</div><div class="b">Open by offering to ingest their job postings via the crawler. Trey: "If a business has an active job listing, why can't you walk away from that conversation with an account created and jobs posted?"</div></div>
+          <div class="step"><div class="h">2. Frame the problem.</div><div class="b">Hiring through Indeed costs time and dollars, and most hires churn inside 90 days. You're already trying to hire Pros off our platform — let's make that an actual workflow.</div></div>
+          <div class="step"><div class="h">3. Walk the business surface.</div><div class="b">Show the job-posting flow, the matched-applicant view, the MatchScore shortlist, and the AI summary on each applicant.</div></div>
+          <div class="step"><div class="h">4. The working interview.</div><div class="b">Show how a temp shift becomes a try-out without breaking their existing workflow. Adam: "The problem was you had to hire them just to fire them three days later."</div></div>
+          <div class="step"><div class="h">5. Drop the anchors.</div><div class="b">$1,500 vs. their current Indeed cost-per-hire. 30-day guarantee. $5/hr buy-down on prior worked hours. One credit covers multiple guarantee rounds.</div></div>
+          <div class="step"><div class="h">6. Pivot in dead conversations.</div><div class="b">Danny: "Hey, we're trying to phase out temp spend — that conversation usually is dead in the water. This allows you to pivot."</div></div>
+          <div class="step"><div class="h">7. Close on a single hire.</div><div class="b">"Let's land one good hire together. If it doesn't stick, the credit comes back."</div></div>
+        </div>
+
+        <div class="section-head" style="margin-top: 48px;">
+          <div class="section-eyebrow">FAQ</div>
+          <h2 class="section-title">Common questions — answered</h2>
+          <p class="section-desc">Pulled from the May 14 Internal FAQ v3. Use word-for-word when partners or teammates ask.</p>
+        </div>
+        <details class="faq"><summary>What does it cost a business to hire through Jobs?</summary><p>$1,500 per successful hire. Posting is free. There's no fee for receiving applicants, sending working interviews (those bill as normal marketplace shifts), or messaging candidates.</p></details>
+        <details class="faq"><summary>When exactly is the $1,500 charged?</summary><p>When the business sends an offer, the card is charged and the credit moves into an "in-use" state. The credit is deducted (revenue recognized) only when the Pro clicks Accept. If the Pro declines or no-shows, the same credit can be redirected to another applicant or even a different job posting at the same location.</p></details>
+        <details class="faq"><summary>How does the buy-down work?</summary><p>$5 per hour off the fee for prior worked hours with that specific business, capped at 300 hours. It's a burn-down, not a cliff — 150 hours of prior work knocks $750 off the fee.</p></details>
+        <details class="faq"><summary>What exactly does the 30-day guarantee cover?</summary><p>If a hire doesn't stick within 30 days, the credit is returned and the business can restart the search at no additional cost. Default behavior is credit-back, not cash refund. One credit can cover multiple replacement rounds — Qwick keeps shift margin on every working-interview shift along the way.</p></details>
+        <details class="faq"><summary>What's a working interview?</summary><p>A temp shift offered to a job applicant so the business can try them out before formally hiring. Structured, paid, and a replacement for the unpaid "stash" tryouts common in hospitality. Trey: "It's kind of like dating. Better to find out up front than after onboarding to ADP."</p></details>
+        <details class="faq"><summary>What if a Pro accepts a working interview and then declines the offer?</summary><p>Today: no pro-side penalty. The business retains its credit (Pro didn't accept), the working-interview shift was already paid at marketplace rates, and the business can pivot the credit to another applicant. Known gap — don't oversell Pro commitment.</p></details>
+        <details class="faq"><summary>Which markets are we launching in?</summary><p>Hybrid (1099 + W2) and 1099-only markets are in. W-2-only markets are out for now while joint-employment risk is evaluated — that excludes the West Coast, Denver, and Chicago at launch.</p></details>
+        <details class="faq"><summary>How are MSA / restricted accounts (Aramark, Boeing) handled?</summary><p>Owned by Partnerships (Courtney Gulseth, Jared Gidan, Ed Gurrieri). Business-side blocking is in place. Pro-side blocking isn't built yet — a manager at an MSA account who happens to have a Pro account could still see Jobs in the Pro app. Don't pitch Jobs to an MSA without checking first.</p></details>
+        <details class="faq"><summary>Won't businesses just hire Pros off-platform to avoid the fee?</summary><p>Some will try. This is already happening at scale today and we're capturing zero revenue from it. The goal isn't policing — it's pricing the workflow attractively enough that businesses choose to come back into it. The 30-day guarantee plus curated matching + AI screening are the anchors. ToS updates reinforce that hires belong on-platform.</p></details>
+        <details class="faq"><summary>Won't this pluck our best Pros out of the temp marketplace?</summary><p>Real concern under active monitoring. Counter: top Pros are already getting hired off-platform behind our backs; Pros opt in to full-time work and are notified when a shift is a working interview; Qwick keeps shift margin on every working interview; future V3 matching will balance supply protection vs. revenue capture.</p></details>
+        <details class="faq"><summary>Easy entry point for sales conversations?</summary><p>Lead with free, not with $1,500. Grab their job posting URL, drop it on their business profile, and our crawler auto-posts. Free syndication into our Pro pool with zero commitment. Danny: "Hey, we're trying to phase out temp spend — that conversation usually is dead in the water. This allows you to pivot."</p></details>
+        <details class="faq"><summary>What positions does Jobs support today?</summary><p>An expanded position list compared to the marketplace — F&amp;B managers explicitly included (major customer pain point). Working-interview-incompatible roles like security guards are excluded. Director/manager placements ($60k–$100k+) are roadmap.</p></details>
+
+      </section>
+
+      <!-- MARKETING CONTENT -->
+      <section class="view" id="view-battlecards">
+        <div class="section-head">
+          <div class="section-eyebrow">Launch Marketing</div>
+          <h2 class="section-title">Marketing Content</h2>
+          <p class="section-desc">Live marketing assets and the public Jobs landing page.</p>
+        </div>
+
+        <div class="grid-2">
+          <a class="feature-card" href="https://claude.ai/artifacts/latest/da63975c-3615-45ef-96ef-084da9d7b2ca" target="_blank" rel="noreferrer">
+            <div class="feature-ico" style="background: var(--creme); color: var(--lettuce);">🎨</div>
+            <div class="feature-tag">Internal · Live Artifact</div>
+            <h3>Marketing Materials</h3>
+            <p>Campaign assets, messaging pillars, customer-facing collateral, and outbound templates for the Jobs launch.</p>
+            <span class="feature-cta">Open marketing artifact ↗</span>
+          </a>
+          <a class="feature-card" href="https://www.qwick.com/jobs/" target="_blank" rel="noreferrer">
+            <div class="feature-ico" style="background: var(--lettuce); color: var(--white);">🌐</div>
+            <div class="feature-tag">Public · qwick.com/jobs</div>
+            <h3>Qwick Jobs Website</h3>
+            <p>The live public-facing Jobs landing page on qwick.com. Use as the canonical link in outbound, email signatures, and partner conversations.</p>
+            <span class="feature-cta">Visit qwick.com/jobs ↗</span>
+          </a>
+        </div>
+      </section>
+    </div>
+
+    <div class="footer">
+      <span>Qwick · Jobs · Internal Use Only · Updated May 14, 2026</span>
+      <span>For corrections, ping Trey.</span>
+    </div>
+  </main>
+</div>
+
+<script>
+  // Access gate
+  (function() {
+    const PHRASE = "QwickJobs";
+    const KEY = "qwick-jobs-hub-unlocked";
+    const gate = document.getElementById('gate');
+    const app = document.getElementById('app');
+    const form = document.getElementById('gate-form');
+    const input = document.getElementById('gate-input');
+    const error = document.getElementById('gate-error');
+
+    function unlock() {
+      try { sessionStorage.setItem(KEY, "1"); } catch (e) {}
+      gate.style.display = 'none';
+      app.classList.remove('hidden');
+      document.body.classList.remove('locked');
+    }
+
+    let alreadyUnlocked = false;
+    try { alreadyUnlocked = sessionStorage.getItem(KEY) === "1"; } catch (e) {}
+
+    if (alreadyUnlocked) {
+      unlock();
+    } else {
+      setTimeout(() => input.focus(), 50);
+    }
+
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+      if (input.value.trim() === PHRASE) {
+        error.textContent = "";
+        input.classList.remove('error');
+        unlock();
+      } else {
+        error.textContent = "Incorrect phrase. Try again.";
+        input.classList.add('error');
+        input.select();
+      }
+    });
+
+    input.addEventListener('input', () => {
+      if (input.classList.contains('error')) {
+        input.classList.remove('error');
+        error.textContent = "";
+      }
+    });
+  })();
+
+  // Tab navigation
+  const navButtons = document.querySelectorAll('#nav button');
+  const views = document.querySelectorAll('.view');
+  function showView(id) {
+    views.forEach(v => v.classList.toggle('active', v.id === 'view-' + id));
+    navButtons.forEach(b => b.classList.toggle('active', b.dataset.view === id));
+    window.scrollTo(0, 0);
+  }
+  navButtons.forEach(b => b.addEventListener('click', () => showView(b.dataset.view)));
+  document.querySelectorAll('[data-go]').forEach(a => {
+    a.addEventListener('click', (e) => { e.preventDefault(); showView(a.dataset.go); });
+  });
+
+</script>
+</body>
+</html>
